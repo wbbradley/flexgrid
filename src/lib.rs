@@ -4,48 +4,104 @@
 //  Created by William Bradley on 9/3/18.
 //  Copyright © 2021, 2018 William Bradley. All rights reserved.
 //
-
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub struct Key<'a> {
-    key: &'a str
+    key: &'a str,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Direction {
     Right,
-    Down
+    Down,
 }
 
+#[allow(dead_code)]
 pub struct Padding {
-    startMain: f32,
-        startCross: f32,
-        endMain: f32,
-        endCross: f32
+    start_main: f32,
+    start_cross: f32,
+    end_main: f32,
+    end_cross: f32,
 }
 
+#[allow(dead_code)]
 pub enum Spacing {
-    case pixels(CGFloat)
-    case flexBetween
+    Pixels(f32),
+    FlexBetween,
 }
 
-trait Layoutable {
-    fn nest(key: Key, direction: Direction, padding: Padding) -> Layoutable
-    fn add(size: MaybeLinkedSize) -> Item
-    fn space(size: MaybeLinkedSize)
+#[allow(dead_code)]
+#[derive(Debug, Clone, Copy)]
+pub struct Rect {
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
 }
 
-/*
-class LayoutInfo {
-    let direction : Direction
-    let padding : Padding
-    var items = [Item]()
-
-    init(direction: Direction, padding: Padding) {
-        self.direction = direction
-        self.padding = padding
+#[allow(dead_code)]
+impl Rect {
+    fn empty() -> Self {
+        Self {
+            x: 0.0,
+            y: 0.0,
+            width: 0.0,
+            height: 0.0,
+        }
     }
 }
 
+#[allow(dead_code)]
+pub struct Item<'a> {
+    key: Key<'a>,
+    size_key: Key<'a>,
+    frame: Rect,
+}
+
+#[allow(dead_code)]
+impl<'a> Item<'a> {
+    fn new(key: Key<'a>, size_key: Key<'a>) -> Self {
+        Self {
+            key: key,
+            size_key: size_key,
+            frame: Rect::empty(),
+        }
+    }
+}
+
+#[allow(dead_code)]
+pub(crate) enum MaybeLinkedSize<'a> {
+    Pixels(f32),
+    Percent(f32),
+    Flex(f32),
+    Link(Key<'a>),
+}
+
+trait Layoutable {
+    fn nest<T: Layoutable>(key: Key, direction: Direction, padding: Padding) -> T;
+    fn add<'a>(size: MaybeLinkedSize) -> Item<'a>;
+    fn space(size: MaybeLinkedSize) -> ();
+}
+
+#[allow(dead_code)]
+pub struct LayoutInfo<'a> {
+    direction: Direction,
+    padding: Padding,
+    items: Vec<Item<'a>>,
+}
+
+#[allow(dead_code)]
+impl<'a> LayoutInfo<'a> {
+    fn new(direction: Direction, padding: Padding) -> Self {
+        Self {
+            direction: direction,
+            padding: padding,
+            items: Vec::new(),
+        }
+    }
+}
+
+/*
 class NestedLayout : Layoutable {
     weak var engine : Layout!
     var info : LayoutInfo
@@ -71,7 +127,7 @@ class NestedLayout : Layoutable {
     }
 
     func add(key: Key, size: MaybeLinkedSize) -> Item {
-        let item = Item(key: key, sizeKey: engine.genSizeKey(size))
+        let item = Item(key: key, size_key: engine.genSizeKey(size))
         engine.itemMap[key] = item
         info.items.append(item)
         return item
@@ -133,7 +189,7 @@ class Layout : Layoutable {
     }
 
     func add(key: Key, size: MaybeLinkedSize) -> Item {
-        let item = Item(key: key, sizeKey: genSizeKey(size))
+        let item = Item(key: key, size_key: genSizeKey(size))
         add(item: item)
         return item
     }
@@ -163,29 +219,29 @@ class Layout : Layoutable {
         var mainSum : CGFloat = 0
 
         for child in info.items {
-            switch sizes[child.sizeKey]! {
+            switch sizes[child.size_key]! {
             case .pixels(let px):
                 mainSum += px
             case .percent(let pct):
                 let pixels = getAxisLength(frame: frame, direction: info.direction) * pct / 100.0
-                sizes[child.sizeKey] = .pixels(pixels)
+                sizes[child.size_key] = .pixels(pixels)
                 mainSum += pixels
             case .flex(let flexGrow):
                 flexGrowSum += flexGrow
             }
         }
 
-        let mainAvailable = getAxisLength(frame: frame, direction: info.direction) - info.padding.startMain - info.padding.endMain - mainSum
+        let mainAvailable = getAxisLength(frame: frame, direction: info.direction) - info.padding.start_main - info.padding.end_main - mainSum
         if mainAvailable <= 0 {
             fatalError("Ran out of space for children because of margin overrun.")
         }
 
         for child in info.items {
-            switch sizes[child.sizeKey]! {
+            switch sizes[child.size_key]! {
             case .pixels(_):
                 break
             case .flex(let flex):
-                sizes[child.sizeKey] = .pixels(mainAvailable * flex/flexGrowSum)
+                sizes[child.size_key] = .pixels(mainAvailable * flex/flexGrowSum)
             case .percent(_):
                 fatalError("Percent should be eradicated by now")
             }
@@ -202,26 +258,26 @@ class Layout : Layoutable {
         var mainCur : CGFloat
         switch info.direction {
         case .right:
-            mainCur = frame.origin.x + info.padding.startMain
+            mainCur = frame.origin.x + info.padding.start_main
         case .down:
-            mainCur = frame.origin.y + frame.size.height - info.padding.startMain
+            mainCur = frame.origin.y + frame.size.height - info.padding.start_main
         }
 
         for child in info.items {
-            switch sizes[child.sizeKey]! {
+            switch sizes[child.size_key]! {
             case .pixels(let pixels):
                 switch info.direction {
                 case .right:
                     child.frame = CGRect(x: mainCur,
-                                     y: frame.origin.y + info.padding.startCross,
+                                     y: frame.origin.y + info.padding.start_cross,
                                      width: pixels,
-                                     height: frame.size.height - info.padding.endCross - info.padding.startCross)
+                                     height: frame.size.height - info.padding.end_cross - info.padding.start_cross)
                     mainCur += pixels
                 case .down:
                     mainCur -= pixels
-                    child.frame = CGRect(x: frame.origin.x + info.padding.startCross,
+                    child.frame = CGRect(x: frame.origin.x + info.padding.start_cross,
                                      y: mainCur,
-                                     width: frame.size.width - info.padding.endCross - info.padding.startCross,
+                                     width: frame.size.width - info.padding.end_cross - info.padding.start_cross,
                                      height: pixels)
                 }
                 if let info = layoutMap[child.key] {
@@ -247,13 +303,6 @@ indirect enum Size {
     case flex(CGFloat)
 }
 
-indirect enum MaybeLinkedSize {
-    case pixels(CGFloat)
-    case percent(CGFloat)
-    case flex(CGFloat)
-    case link(Key)
-}
-
 func getAxisLength(frame: CGRect, direction: Direction) -> CGFloat {
     switch direction {
     case .down:
@@ -269,16 +318,6 @@ func other(direction: Direction) -> Direction {
         return .down
     case .down:
         return .right
-    }
-}
-
-class Item {
-    let key: Key
-    let sizeKey: Key
-    var frame: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
-    init(key: Key, sizeKey: Key) {
-        self.key = key
-        self.sizeKey = sizeKey
     }
 }
 */
