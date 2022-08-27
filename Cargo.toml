@@ -1,8 +1,18 @@
 [package]
-name = "layout-rs"
+name = "flexgrid"
 version = "0.1.0"
 edition = "2021"
+authors = ["William Bradley"]
+license = "MIT"
+description = "A simple bidirectional flex and grid layout system."
+homepage = "https://github.com/wbbradley/flexgrid"
+repository = "https://github.com/wbbradley/flexgrid"
+readme = "README.md"
+keywords = ["layout", "flex", "grid", "engine", "flex-grid", "rectangle", "flow"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[lib]
+name = "flexgrid"

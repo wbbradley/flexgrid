@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-
 //
-//  layout-rs/src/lib.rs
+//  flexgrid/src/lib.rs
 //
 //  Created by William Bradley on 9/3/18.
-//  Copyright © 2021, 2018 William Bradley. All rights reserved.
+//  Copyright 2022, 2021, 2018 William Bradley.
 //
+
+use std::collections::HashMap;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -205,7 +205,6 @@ pub enum Spec {
     Pixels(f64),
     Percent(f64),
     Flex(f64),
-    Link(Key),
 }
 
 #[allow(dead_code)]
@@ -326,7 +325,6 @@ impl<'a> Layout<'a> {
         let key = self.add(spec, move |_rect: Rect| -> () {
             let mut layout = Self::new(direction, padding);
             f(&mut layout);
-            // TODO: run solver...
         })?;
         Ok(key)
     }
@@ -347,16 +345,6 @@ impl<'a> Layout<'a> {
                 let k = self.generate_key("size_");
                 self.sizes.insert(k.clone(), Size::Flex(v));
                 Ok(k)
-            }
-            Spec::Link(k) => {
-                if self.sizes.contains_key(&k) {
-                    Ok(k)
-                } else {
-                    Err(LayoutError::error(format!(
-                        "could not find linked key {}",
-                        k
-                    )))
-                }
             }
         }
     }
@@ -488,48 +476,6 @@ fn layout_solver<'a>(
     }
     Ok(final_rects)
 }
-/*
-    fn generate_size_key(_ s: Spec) -> Key {
-        switch s {
-        case .pixels(let v):
-            let k = generate_key(prefix: "size_")
-            sizes[k] = .pixels(v)
-            return k
-        case .percent(let v):
-            let k = generate_key(prefix: "size_")
-            sizes[k] = .percent(v)
-            return k
-        case .flex(let v):
-            let k = generate_key(prefix: "size_")
-            sizes[k] = .flex(v)
-            return k
-        case .link(let k):
-            if sizes.index(forKey: k) != nil {
-                return k
-            } else {
-                fatalError("")
-            }
-        }
-    }
-
-    fn solve(frame: Rect) {
-        Engine.layout_solver(frame: frame,
-                            info: self.info,
-                            layout_map: layout_map,
-                            sizes: &sizes)
-    }
-
-}
-
-fn other(direction: Direction) -> Direction {
-    switch direction {
-    case .right:
-        return .down
-    case .down:
-        return .right
-    }
-}
-*/
 
 fn get_axis_length(frame: &Rect, direction: Direction) -> f64 {
     match direction {
