@@ -8,7 +8,7 @@ description = "A simple bidirectional flex and grid layout system."
 homepage = "https://github.com/wbbradley/flexgrid"
 repository = "https://github.com/wbbradley/flexgrid"
 readme = "README.md"
-keywords = ["layout", "flex", "grid", "engine", "flex-grid", "rectangle", "flow"]
+keywords = ["layout", "flex", "grid", "engine", "flow"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
