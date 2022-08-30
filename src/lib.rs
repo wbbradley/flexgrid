@@ -71,7 +71,7 @@ impl From<&Vector2> for Vector2 {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Rect {
     pub x: f64,
     pub y: f64,
